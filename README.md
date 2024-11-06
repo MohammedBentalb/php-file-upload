@@ -3,7 +3,7 @@
 ### I'v just started using PHP for the last 15 days and this is so far the best way i can handle file upload although there is a room for improvements.
 
 ### improvements to be added apart from the `UI` that looks terrible :
-
+- Parts from the code could be refactored into separate reusable bloc of code (`Functions`...)
 - Adding more flexibility to handle other type of images.
 - Adding more Flexibility to handle other types of files like .pfd,.ppt,...
 - Improving error handling but building a robust error stack checking for various errors and correspond to the each one of them.
