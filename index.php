@@ -52,7 +52,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         // Maintaining the transparency (alpha) of png images
         if($imageType === IMAGETYPE_PNG){
             imagealphablending($newImage, false);
-            imagesavealpha($newImage, false);
+            imagesavealpha($newImage, true);
         }
             
         // Resizing and saving new image
