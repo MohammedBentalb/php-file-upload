@@ -30,62 +30,43 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         
         // Getting image dimensions
         $imagePath = $_FILES['image']['tmp_name'];
-        [$width, $height] = getimagesize($imagePath);
-        
-        // Setting the max dimension to be 500 (randomly picked number but could be modified depending on the frond-end needs) and calculating the scale factor + new width and height
-        $maxDim = 500;
-        $scaleFactor = (float) ($maxDim / max($width, $height));
-        $newWidth = (float) ($width * $scaleFactor);
-        $newHeight = (float) ($height * $scaleFactor);
-
-        // Getting the image type
-        $imageType = exif_imagetype($imagePath);
-
-        // Making functions depending on the type
-        $createFunc = "imagecreatefrom{$allowedTypes[$imageType]}";
-        $saveFunc = "image{$allowedTypes[$imageType]}";
-
-        // Creating the image from path and the new resized image holder
-        $image = $createFunc($imagePath);
-        $newImage = imagecreatetruecolor($newWidth, $newHeight);
-
-        // Maintaining the transparency (alpha) of png images
-        if($imageType === IMAGETYPE_PNG){
-            imagealphablending($newImage, false);
-            imagesavealpha($newImage, true);
+        $imageSize = getimagesize($imagePath);
+        if(!empty($imageSize)){ 
+            [$width, $height] = $imageSize;
+            // Setting the max dimension to be 500 (randomly picked number but could be modified depending on the frond-end needs) and calculating the scale factor + new width and height
+            $maxDim = 500;
+            $scaleFactor = (float) ($maxDim / max($width, $height));
+            $newWidth = (float) ($width * $scaleFactor);
+            $newHeight = (float) ($height * $scaleFactor);
+            // Getting the image type
+            $imageType = exif_imagetype($imagePath);
+            // Making functions depending on the type
+            $createFunc = "imagecreatefrom{$allowedTypes[$imageType]}";
+            $saveFunc = "image{$allowedTypes[$imageType]}";
+            // Creating the image from path and the new resized image holder
+            $image = $createFunc($imagePath);
+            $newImage = imagecreatetruecolor($newWidth, $newHeight);
+            if(!empty($newImage)){
+                // Maintaining the transparency (alpha) of png images
+                if($imageType === IMAGETYPE_PNG){
+                    imagealphablending($newImage, false);
+                    imagesavealpha($newImage, true);
+                }
+                // Resizing and saving new image
+                imagecopyresampled($newImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                $saveFunc($newImage, $uploadDir . $newFilename . '.' . $allowedTypes[$imageType]);
+                $success = 'Done';
+                // Freeing memory , required only when handling multiple files for the sake of performance
+                imagedestroy($image);
+                imagedestroy($newImage);
+            }
         }
-            
-        // Resizing and saving new image
-        imagecopyresampled($newImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-        $saveFunc($newImage, $uploadDir . $newFilename . '.' . $allowedTypes[$imageType]);
-
-        $success = 'Done';
-        // Freeing memory , required only when handling multiple files for the sake of performance
-        imagedestroy($image);
-        imagedestroy($newImage);
-    
     } else {
             // Show error message or handle error as how ever needed 
             $fileError = 'unsupported type of images';
     }
 }
 
-
-    /** This Could be a good way for running a test but the above example is better since it removes data from the images which help not only protecting the user but also rescaling the image to what ever format we want and optimizing it (removing unneeded data) */
-
-    /** if($_SERVER['REQUEST_METHOD'] === 'POST'){
-    if($_FILES['image']['error'] === 0 && $_FILES['image']['size'] > 0){
-        $pureName = pathinfo($_FILES['image']['full_path'], PATHINFO_FILENAME);
-        $filename = preg_replace('/[^a-zA-Z0-9]/', '', $pureName);
-        
-        $dirPath = __DIR__ . '/public/images/';
-        if(!is_dir($dirPath)){
-            mkdir($dirPath, '0777', true);
-        }
-
-        move_uploaded_file($_FILES['image']['tmp_name'], $dirPath .  $filename . '-' . time(). '.jpeg');
-    }
-}*/
 
 ?>
 <main>
